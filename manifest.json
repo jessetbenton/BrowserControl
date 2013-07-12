@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "Browser Control",
+  "description": "This extension allows you to delete whatever you want from a webpage.",
+  "version": "1.2",
+  "content_scripts": [
+    {
+        "matches": ["<all_urls>"],
+        "js": ["js/jquery.js", "js/browser_Control.js"]
+    }
+  ],
+  "background": {
+    "scripts": ["js/eventPage.js"],
+    "persistent": false
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "images/16.png",
+    "48": "images/48.png",
+    "128": "images/128.png"      
+  },
+  "browser_action": {
+    "default_icon": "images/icon.png",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "tabs", "http://*/*", "storage"
+  ]
+}
