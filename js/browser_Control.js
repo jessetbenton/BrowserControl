@@ -39,7 +39,12 @@ $(document).ready(function () {
             }
             sendResponse();
         }
-    );
+    );   
+    //When the window gains focus, make sure hover is not still triggered
+    $(window).focus(function() {
+        ctrlDown = false;
+        currentNode.removeClass("nodeHover");
+    });     
 });
 
 function hover(state){
