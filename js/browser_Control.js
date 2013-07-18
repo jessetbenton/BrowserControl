@@ -40,13 +40,25 @@ $(document).ready(function () {
             sendResponse();
         }
     );   
-    //When the window gains focus, make sure hover is not still triggered
+    //Make sure the hover is not still active when:
+    //The window gains focus
     $(window).focus(function() {
+        disableHover();
+    });
+    //The window loses focus
+    $(window).blur(function() {
+        disableHover();
+    });
+});
+function disableHover() {
+    try {
         ctrlDown = false;
         currentNode.removeClass("nodeHover");
-    });     
-});
-
+    }
+    catch(error){
+        //error removing class
+    }
+}
 function hover(state){
     var style = document.createElement('style');
     style.type = "text/css";
@@ -110,6 +122,11 @@ function off() {
     hover(false);
 }
 function toggle() {
+    //wrap each iFrame in a div
+    $("iframe").each(function () {
+        $(this).wrap('<div/>');
+    });
+    
     ctrlDown = false;
     $(document).on({
         keydown: keyDown,
@@ -120,5 +137,7 @@ function toggle() {
     $(document).on({
         mousemove: mouseMove
     }, "*");
+    
+    
     hover(true);
 }
