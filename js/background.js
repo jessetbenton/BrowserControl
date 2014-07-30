@@ -1,40 +1,36 @@
-function iFrameToggle(event) {
-    chrome.runtime.sendMessage({ message: "setLocalStorage", key: "iFrame", value: event.target.value }, function (response) {
-//        console.log(response.status);
-    });
-}
-function save_options() {
-    var select = document.getElementById("switch");
-    var value = select.children[select.selectedIndex].value;
+var state = localStorage['state'];
+chrome.browserAction.setIcon({path:"images/icon" + state + ".png"});
 
-    chrome.runtime.sendMessage({ message: "setLocalStorage", key: "mode", value: value }, function (response) {
-        //console.log(response.status);
-    });
+chrome.runtime.onMessage.addListener(
+  function (request, sender, sendResponse) {
+      if (request.message === "getLocalStorage") {
+          var value = localStorage[request.key];
+          var status = "Got local storage";
+          if (value === undefined) {
+              localStorage[request.key] = 'Off';
+              value = 'Off';
+          }
+          console.log("sending response " + value);
+          sendResponse({ value: value, status: status });
+      }
+  });
 
-    // Update status to let user know options were saved.
-    var status = $('body');
-    status.css({backgroundColor: 'red'});
-    setTimeout(function () {
-        status.css({ backgroundColor: 'white' });
-        window.close();
-    }, 750);
-}
-// Restores select box state to saved value from localStorage.
-function restore_options() {
-    var status;
-    chrome.runtime.sendMessage({ message: "getLocalStorage", key: "mode" }, function (response) {
-        status = response.value;
-        var select = document.getElementById("switch");
-        if (!status) {
-            return;
-        }
 
-        for (var i = 0; i < select.children.length; i++) {
-            var child = select.children[i];
-            if (child.value == status) {
-                child.selected = "true";
-                break;
-            }
-        }
-    });
+function updateIcon() {
+   state = localStorage['state'];
+   if(state == undefined || state === "On") {
+      localStorage['state'] = 'Off';
+   }
+   else {
+      localStorage['state'] = 'On';
+   }
+   console.log("updating icon " + state);
+
+   chrome.browserAction.setIcon({path:"images/icon" + state + ".png"});
+
+   //reload page
+   //chrome.tabs.getSelected(null, function(tab) {
+   // chrome.tabs.reload(tab.id);
+   //});
 }
+chrome.browserAction.onClicked.addListener(updateIcon);
