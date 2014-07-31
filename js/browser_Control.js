@@ -1,5 +1,6 @@
 var ctrlDown = false;
 function disableHover() {
+    ctrlDown = false;
     removeClass();
     var elements = document.getElementsByClassName('browserControl-iframe');
     while(elements.length > 0) {
@@ -7,36 +8,37 @@ function disableHover() {
         elements = document.getElementsByClassName('browserControl-iframe');
     }
 }
-document.onreadystatechange = function() {
-    if(document.readyState === "complete") {
-        console.log("page ready");
-        var status;
-        //runs on page load
-        chrome.runtime.sendMessage({ message: "getLocalStorage", key: "state" }, function (response) {
-            status = response.value;
-            switch(status) {
-                case 'On':
-                    console.log("running...");
-                    on();
-                    break;
-                default:
-                    break;
-            }
-        }); 
-        //Make sure the hover is not still active when:
-        //The window gains focus
-        window.onfocus = disableHover();
-        //The window loses focus
-        window.onblur = disableHover();
+function init() {
+    var status;
+    //runs on page load
+    chrome.runtime.sendMessage({ message: "getLocalStorage", key: "state" }, function (response) {
+        status = response.value;
+        switch(status) {
+            case 'On':
+                on();
+                break;
+            case 'Off':
+                off();
+                break;
+            default:
+                break;
+        }
+    }); 
 
-        //Add css
+    //Add css
+    if(document.getElementById('browserControlCss') === null) {
         var css = document.createElement('style');
         css.type = "text/css";
-        css.innerHTML = ".browserControl { outline: solid 2px #ff0000; } .browserControl-iframe { background: rgba(255,0,0,0.6); z-index: 1000; position: absolute;}";
-        document.body.appendChild(css); 
+        css.id = "browserControlCss";
+        css.innerHTML = ".browserControl {outline: solid 2px #ff0000;} .browserControl-iframe {background: rgba(255,0,0,0.6); z-index: 1000; position: absolute;}";
+        document.body.appendChild(css);     
+    }
+}
+document.onreadystatechange = function() {
+    if(document.readyState === "complete") {
+        init();
     }
 }     
-
 function removeClass() {
     var elements = document.getElementsByClassName('browserControl');
     for(var i = 0; i < elements.length; i++) {
@@ -81,9 +83,8 @@ function onContextMenu(event) {
 }
 function keyDown(event) {
     //ctrl key pressed
-    if(!ctrlDown && event.which == 17) {
+    if(!ctrlDown && event.which === 17) {
         ctrlDown = true;
-
         var iframes = document.getElementsByTagName('iframe');
         for(i in iframes) {
             var iframe = iframes[i];
@@ -108,8 +109,21 @@ function keyUp(event) {
     }
 }
 function on() {
-    document.addEventListener('keydown', keyDown);
-    document.addEventListener('keyup', keyUp);
-    document.addEventListener('contextmenu', onContextMenu);
-    document.addEventListener('mousemove', mouseMove);
+    document.onkeydown = keyDown;
+    document.onkeyup = keyUp;
+    document.oncontextmenu = onContextMenu;
+    document.onmousemove = mouseMove;
+
+    //Make sure the hover is not still active when:
+    //The window gains focus
+    window.onfocus = disableHover;
+    //The window loses focus
+    window.onblur = disableHover;
 }
+function off() {
+    document.onkeydown = null;
+    document.onkeyup = null;
+    document.oncontextmenu = null;
+    document.onmousemove = null;
+}
+init();

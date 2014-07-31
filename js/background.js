@@ -1,36 +1,38 @@
 var state = localStorage['state'];
-chrome.browserAction.setIcon({path:"images/icon" + state + ".png"});
+var path = "images/iconOn.png";
+if(state !== undefined) {
+   path = "images/icon" + state + ".png";
+   localStorage['state'] = 'On';
+}
+chrome.browserAction.setIcon({path:path});
 
 chrome.runtime.onMessage.addListener(
-  function (request, sender, sendResponse) {
+   function (request, sender, sendResponse) {
       if (request.message === "getLocalStorage") {
           var value = localStorage[request.key];
           var status = "Got local storage";
           if (value === undefined) {
-              localStorage[request.key] = 'Off';
-              value = 'Off';
+              localStorage[request.key] = 'On';
+              value = 'On';
           }
-          console.log("sending response " + value);
+          // console.log("sending response " + value);
           sendResponse({ value: value, status: status });
       }
-  });
+   }
+);
 
-
-function updateIcon() {
+function updateIcon(tab) {
    state = localStorage['state'];
-   if(state == undefined || state === "On") {
-      localStorage['state'] = 'Off';
+   if(state === "On") {
+      state = 'Off';
    }
    else {
-      localStorage['state'] = 'On';
+      state = 'On';
    }
-   console.log("updating icon " + state);
+   localStorage['state'] = state;
+   var path = "images/icon" + state + ".png";
 
    chrome.browserAction.setIcon({path:"images/icon" + state + ".png"});
-
-   //reload page
-   //chrome.tabs.getSelected(null, function(tab) {
-   // chrome.tabs.reload(tab.id);
-   //});
+   chrome.tabs.executeScript(null, {file: "js/browser_control.js"});
 }
 chrome.browserAction.onClicked.addListener(updateIcon);
